@@ -1,4 +1,4 @@
-use std::{net::{TcpListener, TcpStream}, io::Write, fmt::Error};
+use std::{net::TcpListener, io::{BufReader, BufWriter, BufRead, Write}};
 use std::io::Result;
 
 fn main() -> Result<()> {
@@ -9,9 +9,23 @@ fn main() -> Result<()> {
     
     for stream in listener.incoming() {
         match stream {
-            Ok(mut stream) => {
-                println!("accepted new connection");
-                stream.write_all(b"+PONG\r\n")?;
+            Ok(stream) => {
+                println!("Connection Start!");
+                loop {
+                    let mut msg = String::new();
+                    let mut reader = BufReader::new(&stream);
+                    let mut writer = BufWriter::new(&stream);
+
+                    if let Ok(read_bytes) = reader.read_line(&mut msg) {
+                        if read_bytes == 0 {break;}
+                    }
+                    println!("{}", msg);
+                    msg.clear();
+                    writer.write_all(b"+PONG\r\n")?;
+                    writer.flush().unwrap();
+
+                }
+                println!("Connection Closed!");
             }
             Err(e) => {
                 println!("error: {}", e);
