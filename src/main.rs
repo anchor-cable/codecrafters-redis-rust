@@ -11,20 +11,7 @@ fn main() -> Result<()> {
         match stream {
             Ok(stream) => {
                 println!("Connection Start!");
-                loop {
-                    let mut msg = String::new();
-                    let mut reader = BufReader::new(&stream);
-                    let mut writer = BufWriter::new(&stream);
-
-                    if let Ok(read_bytes) = reader.read_line(&mut msg) {
-                        if read_bytes == 0 {break;}
-                    }
-                    println!("{}", msg);
-                    msg.clear();
-                    writer.write_all(b"+PONG\r\n")?;
-                    writer.flush().unwrap();
-
-                }
+                handle_stream(stream);
                 println!("Connection Closed!");
             }
             Err(e) => {
@@ -34,4 +21,20 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn handle_stream(stream: std::net::TcpStream) {
+    loop {
+        let mut msg = String::new();
+        let mut reader = BufReader::new(&stream);
+        let mut writer = BufWriter::new(&stream);
+
+        if let Ok(read_bytes) = reader.read_line(&mut msg) {
+            if read_bytes == 0 {break;}
+        }
+        println!("receive:{}", msg);
+        msg.clear();
+        writer.write_all(b"+PONG\r\n").expect("unable to write");
+        writer.flush().expect("unable tp flush");
+    }
 }
