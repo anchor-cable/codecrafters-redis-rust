@@ -1,4 +1,4 @@
-use std::{net::TcpListener, io::{BufReader, BufWriter, BufRead, Write}};
+use std::{net::TcpListener, io::{BufReader, BufWriter, BufRead, Write}, thread};
 use std::io::Result;
 
 fn main() -> Result<()> {
@@ -11,7 +11,9 @@ fn main() -> Result<()> {
         match stream {
             Ok(stream) => {
                 println!("Connection Start!");
-                handle_stream(stream);
+                thread::spawn(move || {
+                    handle_stream(stream);
+                });
                 println!("Connection Closed!");
             }
             Err(e) => {
